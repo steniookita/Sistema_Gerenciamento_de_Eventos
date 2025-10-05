@@ -1,7 +1,9 @@
+import datetime
+
 class Evento:
     def __init__(self, nome, data, local, capacidade_max, categoria, preco):
         self.__nome = nome
-        self.__data = datetime.strptime(data, '%Y-%m-%d')
+        self.__data = datetime.strptime(data, '%d-%m-%Y')
         self.__local = local
         self.__capacidade_max = capacidade_max
         self.__categoria = categoria
@@ -24,7 +26,7 @@ class Evento:
     def get_preco(self):
         return self.__preco
     def detalhes(self):
-        return f"Evento: {self.__nome}, Data: {self.__data.strftime('%Y-%m-%d')}, Local: {self.__local}"
+        return f"Evento: {self.__nome}, Data: {self.__data.strftime('%d-%m-%Y')}, Local: {self.__local}"
     def vagas_disponiveis(self):
         return self.__capacidade_max - len(self.__participantes)
     def inscrever_participante(self, participante):
