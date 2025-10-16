@@ -1,18 +1,28 @@
 from datetime import datetime
 
 class Evento:
-    def __init__(self, nome, data, local, capacidade_max, categoria, preco):
+    def __init__(self, nome, data, local, categoria, capacidade_max, preco):
         self.__nome = nome
-        self.__data = datetime.strptime(data, '%d/%m/%Y')
+        self.__data = data
         self.__local = local
-        self.__capacidade_max = capacidade_max
         self.__categoria = categoria
+        self.__capacidade_max = capacidade_max
         self.__preco = preco
-        self.__participantes = []
-        if self.__data < datetime.now():
-            raise ValueError("Data do evento não pode ser anterior à data atual")
+        
+        # Validações
         if capacidade_max <= 0:
             raise ValueError("Capacidade máxima deve ser um número positivo")
+        if preco < 0:
+            raise ValueError("Preço não pode ser negativo")
+        
+        # Validação de data (opcional - verifica se a data não é passada)
+        try:
+            data_obj = datetime.strptime(data, '%Y-%m-%d %H:%M:%S')
+            if data_obj < datetime.now():
+                print("Aviso: A data do evento é anterior à data atual.")
+        except ValueError:
+            pass  # Se a data não estiver no formato esperado, ignora a validação
+
     def get_nome(self):
         return self.__nome
     def get_data(self):
@@ -29,6 +39,7 @@ class Evento:
         return f"Evento: {self.__nome}, Data: {self.__data.strftime('%d-%m-%Y')}, Local: {self.__local}"
     def vagas_disponiveis(self):
         return self.__capacidade_max - len(self.__participantes)
+    
     def inscrever_participante(self, participante):
         if self.vagas_disponiveis() <= 0:
             raise Exception("Evento está lotado")
@@ -36,6 +47,7 @@ class Evento:
             if p.get_email() == participante.get_email():
                 raise Exception("E-mail já cadastrado neste evento")
         self.__participantes.append(participante)
+    
     def cancelar_inscricao(self, email):
         for p in self.__participantes:
             if p.get_email() == email:
@@ -48,6 +60,16 @@ class Evento:
         return self.__preco * len(self.__participantes)
     def get_participantes(self):
         return self.__participantes
+    
+    def get_data_formatada(self):
+        """
+        Retorna a data formatada no padrão brasileiro (DD/MM/YYYY).
+        """
+        try:
+            data_obj = datetime.strptime(self.__data, '%Y-%m-%d %H:%M:%S')
+            return data_obj.strftime('%d/%m/%Y')
+        except ValueError:
+            return self.__data
 
 class Workshop(Evento):
     def __init__(self, nome, data, local, capacidade_max, categoria, preco, material_necessario):

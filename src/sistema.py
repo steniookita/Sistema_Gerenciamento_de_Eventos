@@ -113,6 +113,43 @@ class Sistema_Evento:
         except sqlite3.Error as e:
             print(f'Erro ao realizar inscrição: {e}')
 
+    def listar_todos_participantes(self):
+        """
+        Lista todos os participantes cadastrados no sistema.
+        Mostra nome, email e status de check-in.
+        """
+        self.cursor.execute('''
+            SELECT nome, email, checkin 
+            FROM participantes 
+            ORDER BY nome
+        ''')
+        participantes = self.cursor.fetchall()
+        
+        if not participantes:
+            print('Nenhum participante cadastrado.')
+            return
+        
+        print('\n' + '='*50)
+        print('   LISTA DE TODOS OS PARTICIPANTES')
+        print('='*50)
+        
+        total = len(participantes)
+        total_checkin = 0
+        
+        for nome, email, checkin in participantes:
+            status = "✓ SIM" if checkin == 1 else "✗ NÃO"
+            if checkin == 1:
+                total_checkin += 1
+            
+            print(f'\nNome: {nome}')
+            print(f'E-mail: {email}')
+            print(f'Check-in realizado: {status}')
+            print('-'*50)
+        
+        print(f'\nTotal de participantes cadastrados: {total}')
+        print(f'Total com check-in realizado: {total_checkin}')
+        print('='*50)
+
 
 
     def buscar_por_categoria(self,categoria): ## busca a categoria do evento onde foi criada  na base da classe  evento

@@ -44,6 +44,7 @@ def menu_participantes():
     print("\n[1] Cadastrar Novo Participante")
     print("[2] Realizar Check-in")
     print("[3] Listar Participantes de um Evento")
+    print("[4] Listar Todos Participantes")
     print("[0] Voltar ao Menu Principal")
     print("-"*50)
 
@@ -255,6 +256,9 @@ def processar_menu_participantes(sistema):
             pausar()
         elif opcao == '3':
             listar_participantes_menu(sistema)
+            pausar()
+        elif opcao == '4':
+            sistema.listar_todos_participantes()
             pausar()
         elif opcao == '0':
             break
