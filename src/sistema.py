@@ -107,7 +107,7 @@ class Sistema_Evento:
         try:
             self.cursor.execute(''' INSERT INTO inscricoes (participante_id, evento_id) VALUES (?,?) ''', (participante_id, evento_id))
             self.conn.commit() #Inseri a tabela de isncrição.
-            print('participante {email_participante} inscrito com sucesso no evento {nome_evento}')
+            print(f'participante {email_participante} inscrito com sucesso no evento {nome_evento}')
         except sqlite3.IntegrityError:
             print(f'Participante {email_participante} já esta inscrito no evento {nome_evento}.')
         except sqlite3.Error as e:
@@ -241,7 +241,7 @@ class Sistema_Evento:
         print("-" * 40)
 
     def realizar_chekin(self,email):
-       try:
+        try:
             # 1. Atualizar o campo checkin na tabela participantes
             self.cursor.execute(''' 
                 UPDATE participantes SET checkin = 1 WHERE email = ? AND checkin = 0 
@@ -256,29 +256,66 @@ class Sistema_Evento:
                 if self.cursor.fetchone():
                     print(f"O participante com email {email} já havia realizado o check-in.")
                 else:
-                    print(f"Erro: Participante com email {email} não encontrado.")
-                    
+                    print(f"Erro: Participante com email {email} não encontrado.")                    
         except sqlite3.Error as e:
             print(f"Erro ao realizar check-in: {e}")
 
-    def gerar_relatorio(self):
-        for evento  in self.__lista_eventos:
-           num = len(evento.get_inscritos())
-           print(f'Nome do Evento: {evento.get_nome()} Numero de inscritos: {num}')
+    def gerar_relatorio(self): #Gera um relatorio com o nome do evento e numero de participantes inscritos.
+       self.cursor.execute(''' SELECT e.nome, COUNT(i.participante_id) as inscritos FROM eventos e LEFT JOIN inscricoes i ON e.id = i.evento_id GROUP BY e.id ''')
+       relatorio = self.cursor.fetchall()
+       
+       print(" \--- RELATORIO DE INSCRIÇÕES POR EVENTO ---")
+       for nome_evento, inscritos in relatorio:
+           print(f'Nome de Evento: {nome_evento} | Numero de Inscritos: {inscritos}')
+           print('-'*40)
+
     def listar_eventos_com_vaga(self):
-        print('-- EVENTO COM VAGAS DISPONIVEIS-----')
-        for evento in self.__lista_eventos:
-            if len(evento.get_inscritos()) < evento.get_capacidade():
-                evento.get_detalhes()
+        self.cursor.execute('''
+        SELECT 
+            e.nome, 
+            e.data, 
+            e.local, 
+            e.capacidade, 
+            e.preco,
+            COUNT(i.participante_id) as inscritos
+        FROM eventos e
+        LEFT JOIN inscricoes i ON e.id = i.evento_id
+        GROUP BY e.id
+    ''')
+        eventos = self.cursor.fetchall()
+
+        print("-- EVENTOS COM VAGAS DISPONÍVEIS --")
+        for nome, data, local, capacidade, preco, inscritos in eventos:
+            if inscritos < capacidade:
+                data_formatada = datetime.strptime(data, '%Y-%m-%d %H:%M:%S').strftime('%d/%m/%Y')
+                print(f"Nome: {nome} | Data: {data_formatada} | Local: {local} | Vagas Restantes: {capacidade - inscritos} | Preço: R${preco:.2f}")
             else:
-                print('Evento Indisponivel ')
+                print(f"Evento '{nome}' está lotado.")
+        print("-" * 40)
                 
     def calcular_receita_evento(self,nome_evento):
-        for evento in self.__lista_eventos:
-            if evento.get_nome() == nome_evento:
-                 receita = len(evento.get_inscritos()) * evento.get_preco()
-                 print(f"A receita para o evento '{nome_evento}' é de R${receita:.2f}.")
-                 return receita
-        print(f'Erro: Evento {nome_evento} não encontrado')
-        return 0
+        self.cursor.execute('''
+        SELECT 
+            e.id, 
+            e.preco
+        FROM eventos e
+        WHERE e.nome = ?
+         ''', (nome_evento,))
+        evento = self.cursor.fetchone()
+
+        if not evento:
+            print(f"Erro: Evento '{nome_evento}' não encontrado.")
+            return 0
+
+        evento_id, preco = evento
+
+        self.cursor.execute('''
+            SELECT COUNT(*) FROM inscricoes WHERE evento_id = ?
+        ''', (evento_id,))
+        inscritos = self.cursor.fetchone()[0]
+
+        receita = inscritos * preco
+
+        print(f"A receita do evento '{nome_evento}' é de R${receita:.2f}.")
+        return receita
          

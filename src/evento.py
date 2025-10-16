@@ -1,9 +1,9 @@
-import datetime
+from datetime import datetime
 
 class Evento:
     def __init__(self, nome, data, local, capacidade_max, categoria, preco):
         self.__nome = nome
-        self.__data = datetime.strptime(data, '%d-%m-%Y')
+        self.__data = datetime.strptime(data, '%d/%m/%Y')
         self.__local = local
         self.__capacidade_max = capacidade_max
         self.__categoria = categoria
