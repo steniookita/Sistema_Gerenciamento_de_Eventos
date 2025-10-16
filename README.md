@@ -47,7 +47,7 @@ O desenvolvimento deste projeto foi fortemente baseado nos pilares da **Programa
 
 * **Linguagem**: Python
 * **Testes**: `unittest`
-* **Persistência de Dados**: SQLite3 ou arquivo `.json`
+* **Persistência de Dados**: SQLite3.
 * **Controle de Versão**: Git e GitHub
 
 ## ⚙️ Como Executar o Projeto
